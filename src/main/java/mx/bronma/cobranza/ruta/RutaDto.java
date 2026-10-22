@@ -1,7 +1,6 @@
 package mx.bronma.cobranza.ruta;
 
 import jakarta.annotation.Nullable;
-import mx.bronma.cobranza.usuario.Usuario;
 
 public record RutaDto(
         Long id,

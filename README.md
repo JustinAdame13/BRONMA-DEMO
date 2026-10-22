@@ -49,4 +49,9 @@ Dashboard, antigüedad de cartera, lista de cobro por ruta y monto recuperado po
 |---|---|
 | `configuracion` | `GET/PUT /configuracion`, `PATCH /configuracion/ia`, `GET /configuracion/ia/proveedores`, `GET /configuracion/ia/estado` |
 | `ia`, `Infraestructura`, `Interfaces` | Clientes de Anthropic / OpenAI / Gemini intercambiables en caliente |
-| `usuario`, `ruta`, `cliente`, `nota`, `pago`, `recordatorio`, `importacion`, `riesgo` | Entidades y repositorios (servicios y endpoints pendientes) |
+| `usuario` | `GET /usuarios?rol=` |
+| `ruta` | `GET /rutas?activo=`, `POST /rutas`, `PUT /rutas/{id}` (baja = `activo: false`), `PATCH /rutas/{id}/orden` |
+| `cliente` | `GET /clientes` (filtros `rutaId`, `estadoCredito`, `q`, `sinUbicacion`, `activo`; paginado), `GET /clientes/{id}`, `POST /clientes`, `PUT /clientes/{id}` (baja = `activo: false`), `PATCH /clientes/{id}/ubicacion` |
+| `nota`, `pago`, `recordatorio`, `importacion`, `riesgo` | Entidades y repositorios (servicios y endpoints pendientes) |
+
+Pendiente: `GET /mapa/clientes` (V3 ya trae las columnas) y, en el detalle de cliente, `notasAbiertas` y `riesgo`.

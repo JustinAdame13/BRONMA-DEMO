@@ -42,11 +42,12 @@ public class ClienteConsultas {
     }
 
     public Pagina<ClienteResumenDto> buscar(Long rutaId, EstadoCredito estadoCredito,
-                                            String q, Boolean sinUbicacion,
+                                            String q, Boolean sinUbicacion, Boolean activo,
                                             int pagina, int tamano) {
 
         FiltroSql f = new FiltroSql()
                 .si(rutaId, "c.ruta_id = :rutaId", "rutaId")
+                .si(activo, "c.activo = :activo", "activo")
                 .si(estadoCredito == null ? null : estadoCredito.name(),
                         "c.estado_credito = :estadoCredito", "estadoCredito")
                 .si(q == null || q.isBlank() ? null : "%" + q.trim() + "%",
@@ -60,16 +61,19 @@ public class ClienteConsultas {
         Long total = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM clientes c" + f.where(), f.params(), Long.class);
 
+        // OJO: el text block del ORDER BY empieza con una linea en blanco a proposito.
+        // f.where() no termina en salto de linea; sin ella quedaba ":rutaIdORDER BY".
         String sql = """
                 SELECT c.id, c.codigo_origen, c.nombre_negocio,
                        c.ruta_id, r.nombre AS ruta_nombre,
                        c.telefono_whatsapp, c.estado_credito,
                        COALESCE(s.saldo, 0)         AS saldo,
                        COALESCE(s.saldo_vencido, 0) AS saldo_vencido,
-                       c.latitud, c.longitud, c.orden_visita
+                       c.latitud, c.longitud, c.orden_visita, c.activo
                 FROM clientes c
                 LEFT JOIN rutas r ON r.id = c.ruta_id
                 """ + JOIN_SALDOS + f.where() + """
+
                 ORDER BY c.orden_visita NULLS LAST, c.nombre_negocio
                 LIMIT :tamano OFFSET :offset
                 """;
@@ -88,7 +92,8 @@ public class ClienteConsultas {
                 rs.getBigDecimal("saldo_vencido"),
                 (Double) rs.getObject("latitud"),
                 (Double) rs.getObject("longitud"),
-                (Integer) rs.getObject("orden_visita")));
+                (Integer) rs.getObject("orden_visita"),
+                rs.getBoolean("activo")));
 
         return Pagina.of(contenido, pagina, tamano, total == null ? 0 : total);
     }

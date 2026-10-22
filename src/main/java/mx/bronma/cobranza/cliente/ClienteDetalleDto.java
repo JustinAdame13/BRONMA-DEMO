@@ -41,5 +41,6 @@ public record ClienteDetalleDto(
         Double longitud,
         UbicacionFuente ubicacionFuente,
         Instant ubicacionFijadaEn,
-        Integer ordenVisita) {
+        Integer ordenVisita,
+        Boolean activo) {
 }

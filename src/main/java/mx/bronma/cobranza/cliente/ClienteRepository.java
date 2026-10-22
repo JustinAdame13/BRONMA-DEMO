@@ -16,9 +16,11 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     List<Cliente> findByRutaIdAndActivoTrue(Long rutaId);
 
-    @Query("select c.ruta.id as rutaId, count(c) as total from Cliente c where c.ruta is not null group by c.ruta.id")
-    List <ConteoPorRuta> contarClientesPorRuta();
+    /** Solo activos: los mismos que se pueden ordenar con PATCH /rutas/{id}/orden. */
+    @Query("select c.ruta.id as rutaId, count(c) as total from Cliente c "
+            + "where c.ruta is not null and c.activo = true group by c.ruta.id")
+    List<ConteoPorRuta> contarClientesPorRuta();
 
-    /** Para rearmar el RutaDto despues de guardar. */
-    long countByRutaId(Long rutaId);
+    /** Para rearmar el RutaDto despues de guardar. Solo activos, igual que el listado. */
+    long countByRutaIdAndActivoTrue(Long rutaId);
 }

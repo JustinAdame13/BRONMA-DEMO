@@ -15,5 +15,6 @@ public record ClienteResumenDto(
         BigDecimal saldoVencido,
         Double latitud,
         Double longitud,
-        Integer ordenVisita) {
+        Integer ordenVisita,
+        Boolean activo) {
 }

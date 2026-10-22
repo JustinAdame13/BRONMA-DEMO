@@ -24,17 +24,21 @@ public class ClienteController {
         this.service = service;
     }
 
-    /** Paginado. Los cuatro filtros son opcionales y se combinan entre si. */
+    /**
+     * Paginado. Los filtros son opcionales y se combinan entre si.
+     * Sin activo regresa todos; con activo=true o false, filtrados (igual que /rutas).
+     */
     @GetMapping
     public Pagina<ClienteResumenDto> listar(
             @RequestParam(required = false) Long rutaId,
             @RequestParam(required = false) EstadoCredito estadoCredito,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) Boolean sinUbicacion,
+            @RequestParam(required = false) Boolean activo,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "20") int tamano) {
 
-        return service.listar(rutaId, estadoCredito, q, sinUbicacion, pagina, tamano);
+        return service.listar(rutaId, estadoCredito, q, sinUbicacion, activo, pagina, tamano);
     }
 
     @GetMapping("/{id}")

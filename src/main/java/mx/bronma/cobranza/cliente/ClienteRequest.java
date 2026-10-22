@@ -38,5 +38,11 @@ public record ClienteRequest(
 
         @NotNull EstadoCredito estadoCredito,
 
-        @NotNull Boolean aceptaWhatsapp) {
+        @NotNull Boolean aceptaWhatsapp,
+
+        /**
+         * Opcional. false = dar de baja (no hay DELETE). null = en el alta queda
+         * activo y en la edicion no cambia.
+         */
+        Boolean activo) {
 }

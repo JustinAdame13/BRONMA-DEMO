@@ -63,7 +63,7 @@ public class RutaService {
         r.setNombre(req.nombre());
         r.setColor(req.color());
         r.setRepartidor(buscarRepartidor(req.repartidorId()));
-        r.setActivo(req.activo() == null ? true : req.activo());
+        r.setActivo(req.activo()); // @NotNull en RutaRequest: nunca llega null
 
         return RutaDto.from(rRepository.save(r), 0L);
     }
@@ -84,9 +84,9 @@ public class RutaService {
         r.setNombre(req.nombre());
         r.setColor(req.color());
         r.setRepartidor(buscarRepartidor(req.repartidorId()));
-        r.setActivo(req.activo() == null ? r.getActivo() : req.activo());
+        r.setActivo(req.activo());
 
-        return RutaDto.from(rRepository.save(r), cRepository.countByRutaId(id));
+        return RutaDto.from(rRepository.save(r), cRepository.countByRutaIdAndActivoTrue(id));
     }
 
     /**
@@ -112,10 +112,13 @@ public class RutaService {
             Cliente c = porId.get(id);
             if (c == null) {
                 throw new ReglaNegocioException(
-                        "El cliente " + id + " no pertenece a la ruta " + rutaId);
+                        "El cliente " + id + " no pertenece a la ruta " + rutaId + " o esta dado de baja");
+            }
+            // add() regresa false si ya estaba: un id repetido dejaria un hueco en el orden.
+            if (!mencionados.add(id)) {
+                throw new ReglaNegocioException("El cliente " + id + " viene repetido en la lista");
             }
             c.setOrdenVisita(orden++);
-            mencionados.add(id);
         }
 
         // Los que no vinieron en la lista se quedan sin orden, no al final.

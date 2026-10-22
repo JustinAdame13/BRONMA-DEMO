@@ -47,13 +47,13 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public Pagina<ClienteResumenDto> listar(Long rutaId, EstadoCredito estadoCredito,
-                                            String q, Boolean sinUbicacion,
+                                            String q, Boolean sinUbicacion, Boolean activo,
                                             int pagina, int tamano) {
 
         int p = Math.max(pagina, 0);
         int t = Math.min(Math.max(tamano, 1), TAMANO_MAXIMO);
 
-        return consultas.buscar(rutaId, estadoCredito, q, sinUbicacion, p, t);
+        return consultas.buscar(rutaId, estadoCredito, q, sinUbicacion, activo, p, t);
     }
 
     @Transactional(readOnly = true)
@@ -168,6 +168,17 @@ public class ClienteService {
         c.setPlazoDias(req.plazoDias());
         c.setEstadoCredito(req.estadoCredito());
         c.setAceptaWhatsapp(req.aceptaWhatsapp());
+
+        // null no cambia nada: en el alta se queda el true por defecto de la entidad.
+        if (req.activo() != null) {
+            c.setActivo(req.activo());
+        }
+
+        // Un cliente dado de baja ya no se visita: sale del orden de su ruta.
+        // (reordenar tampoco lo toma en cuenta, porque solo lee los activos.)
+        if (!c.getActivo()) {
+            c.setOrdenVisita(null);
+        }
     }
 
     /** Arma el detalle resolviendo los defaults de configuracion y los saldos. */
@@ -214,6 +225,7 @@ public class ClienteService {
                 c.getLongitud(),
                 c.getUbicacionFuente(),
                 c.getUbicacionFijadaEn(),
-                c.getOrdenVisita());
+                c.getOrdenVisita(),
+                c.getActivo());
     }
 }
