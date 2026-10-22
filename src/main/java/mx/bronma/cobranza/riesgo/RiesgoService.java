@@ -52,7 +52,7 @@ public class RiesgoService {
             Responde UNICAMENTE con un arreglo JSON, sin texto antes ni despues. Un objeto por cliente:
             {"clienteId": numero, "score": 0-100 (100 = no va a pagar), "nivel": "BAJO"|"MEDIO"|"ALTO",
              "accion": "SIN_ACCION"|"COBRAR_PROXIMA_VISITA"|"OFRECER_DESCUENTO_PRONTO_PAGO"|"REDUCIR_CREDITO"|"SUSPENDER_CREDITO",
-             "explicacion": "maximo 200 caracteres, en espanol, dirigida al cobrador"}
+             "explicacion": "maximo 200 caracteres, en espanol con acentos, montos como $1,234.56, dirigida al cobrador"}
             Criterio: BAJO < 35 <= MEDIO < 65 <= ALTO. Se prudente: suspender credito es para casos claros.""";
 
     private final RiesgoConsultas consultas;

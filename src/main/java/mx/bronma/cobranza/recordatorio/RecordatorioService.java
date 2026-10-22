@@ -313,7 +313,17 @@ public class RecordatorioService {
                        pr.dias_offset, r.programado_para, r.estado, r.intentos, r.telefono_destino, r.mensaje,
                        r.mensaje_proveedor_id, r.error, r.enviado_en
                 """ + desde + f.where()
-                + "\nORDER BY r.programado_para DESC, r.id DESC\nLIMIT :tamano OFFSET :offset";
+                // Primero lo de hoy y lo ya pasado (lo mas reciente arriba); al final lo que
+                // todavia no toca, el mas proximo primero. Asi la pantalla abre con lo de hoy.
+                + """
+
+                ORDER BY (r.programado_para > CAST(:hoy AS date)),
+                         CASE WHEN r.programado_para <= CAST(:hoy AS date) THEN r.programado_para END DESC,
+                         r.programado_para ASC,
+                         r.id DESC
+                LIMIT :tamano OFFSET :offset
+                """;
+        f.param("hoy", configuracion.obtenerEntidad().hoy());
         f.param("tamano", t).param("offset", (long) p * t);
 
         List<RecordatorioDto> contenido = jdbc.query(sql, f.params(), (rs, i) -> {

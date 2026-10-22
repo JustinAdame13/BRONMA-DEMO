@@ -34,7 +34,7 @@ class MotorAyaxTest {
         ResultadoAyax r = MotorAyax.evaluar(senales("8000", "7000", 75, 28.0, 0.6, 1.3, 10.0, 40));
         assertEquals(NivelRiesgo.ALTO, r.nivel());
         assertEquals(AccionRecomendada.SUSPENDER_CREDITO, r.accion());
-        assertTrue(r.explicacion().contains("dejo de comprar"));
+        assertTrue(r.explicacion().contains("dejó de comprar"));
     }
 
     @Test

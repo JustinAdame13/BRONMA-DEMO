@@ -1,6 +1,8 @@
 package mx.bronma.cobranza.riesgo;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +39,7 @@ public final class MotorAyax {
             double pts = Math.min(s.diasPromedioRetraso() / 30.0, 1.0) * 35;
             total += pts;
             if (pts >= 5) {
-                motivos.add(String.format(Locale.ROOT, "paga en promedio %.0f dias tarde", s.diasPromedioRetraso()));
+                motivos.add(String.format(Locale.ROOT, "paga en promedio %.0f días tarde", s.diasPromedioRetraso()));
             }
         }
 
@@ -46,15 +48,15 @@ public final class MotorAyax {
         if (tieneVencido && s.diasAtrasoMax() > 0) {
             double pts = Math.min(s.diasAtrasoMax() / 60.0, 1.0) * 25;
             total += pts;
-            motivos.add(String.format(Locale.ROOT, "tiene $%s vencido, la nota mas atrasada lleva %d dias",
-                    s.saldoVencido().setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), s.diasAtrasoMax()));
+            motivos.add(String.format(Locale.ROOT, "tiene %s vencido y su nota más atrasada lleva %d días",
+                    pesos(s.saldoVencido()), s.diasAtrasoMax()));
         }
 
         // 3. Uso del credito
         if (s.usoCredito() != null && s.usoCredito() > 0.5) {
             double pts = Math.min((s.usoCredito() - 0.5) / 0.7, 1.0) * 20;
             total += pts;
-            motivos.add(String.format(Locale.ROOT, "usa el %.0f %% de su limite de credito", s.usoCredito() * 100));
+            motivos.add(String.format(Locale.ROOT, "usa el %.0f%% de su límite de crédito", s.usoCredito() * 100));
         }
 
         // 4. Deuda creciendo
@@ -62,7 +64,7 @@ public final class MotorAyax {
             double pts = Math.min(s.tendenciaDeuda(), 1.0) * 10;
             total += pts;
             if (pts >= 2) {
-                motivos.add(String.format(Locale.ROOT, "su deuda crecio %.0f %% en 30 dias", s.tendenciaDeuda() * 100));
+                motivos.add(String.format(Locale.ROOT, "su deuda creció %.0f%% en 30 días", s.tendenciaDeuda() * 100));
             }
         }
 
@@ -71,7 +73,7 @@ public final class MotorAyax {
         if (debe && s.frecuenciaCompraDias() != null && s.frecuenciaCompraDias() > 0
                 && s.diasSinComprar() != null && s.diasSinComprar() > 2 * s.frecuenciaCompraDias()) {
             total += 10;
-            motivos.add(String.format(Locale.ROOT, "dejo de comprar: compraba cada %.0f dias y lleva %d sin comprar",
+            motivos.add(String.format(Locale.ROOT, "dejó de comprar: compraba cada %.0f días y lleva %d sin comprar",
                     s.frecuenciaCompraDias(), s.diasSinComprar()));
         }
 
@@ -102,6 +104,13 @@ public final class MotorAyax {
                     ? AccionRecomendada.COBRAR_PROXIMA_VISITA
                     : AccionRecomendada.SIN_ACCION;
         };
+    }
+
+    /** $11,010.00: el formato que se usa en Mexico para pesos. */
+    static String pesos(BigDecimal monto) {
+        DecimalFormat f = new DecimalFormat("$#,##0.00", DecimalFormatSymbols.getInstance(Locale.US));
+        f.setRoundingMode(java.math.RoundingMode.HALF_UP);
+        return f.format(monto);
     }
 
     private static String capitalizar(String s) {
