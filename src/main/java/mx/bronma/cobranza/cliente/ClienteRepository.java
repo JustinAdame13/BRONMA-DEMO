@@ -1,6 +1,7 @@
 package mx.bronma.cobranza.cliente;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,4 +15,10 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     List<Cliente> findByCodigoOrigenIn(Collection<String> codigos);
 
     List<Cliente> findByRutaIdAndActivoTrue(Long rutaId);
+
+    @Query("select c.ruta.id as rutaId, count(c) as total from Cliente c where c.ruta is not null group by c.ruta.id")
+    List <ConteoPorRuta> contarClientesPorRuta();
+
+    /** Para rearmar el RutaDto despues de guardar. */
+    long countByRutaId(Long rutaId);
 }
