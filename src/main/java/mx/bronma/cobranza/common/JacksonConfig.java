@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @Configuration
 public class JacksonConfig {
 
+
     @Bean
     public JsonMapperBuilderCustomizer mj(){
         SimpleModule modulo=new SimpleModule().addSerializer(BigDecimal.class, new Serializador());
