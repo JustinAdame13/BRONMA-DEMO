@@ -31,4 +31,7 @@ public class Ruta {
 
     @Column(nullable = false)
     private Boolean activo = true;
+
+    @Column(nullable = false,length = 7)
+    private String color;
 }

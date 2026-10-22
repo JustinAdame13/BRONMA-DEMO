@@ -63,6 +63,28 @@ public class Cliente {
     @Column(nullable = false)
     private Boolean activo = true;
 
+    // ---------- Ubicacion (migraciones V3 y V4) ----------
+
+    /** Grados decimales WGS84. null = cliente sin ubicar, caso valido. */
+    @Column
+    private Double latitud;
+
+    @Column
+    private Double longitud;
+
+    /** Va siempre junto con latitud/longitud: la base lo exige con un CHECK. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ubicacion_fuente", length = 14)
+    private UbicacionFuente ubicacionFuente;
+
+    /** Cuando se fijo la coordenada. Lo pone el servicio, nunca el cliente. */
+    @Column(name = "ubicacion_fijada_en")
+    private Instant ubicacionFijadaEn;
+
+    /** Orden de visita dentro de la ruta. null = sin ordenar. */
+    @Column(name = "orden_visita")
+    private Integer ordenVisita;
+
     @CreationTimestamp
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
