@@ -48,6 +48,7 @@ public class MapaController {
                 c.saldo(),
                 c.saldoVencido(),
                 c.diasAtrasoMax(),
+                c.proximoVencimiento(),
                 c.nivelRiesgo(),
                 c.estadoCredito(),
                 c.prioridad().puntos(),

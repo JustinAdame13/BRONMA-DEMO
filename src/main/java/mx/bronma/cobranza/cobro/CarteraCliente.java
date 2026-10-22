@@ -5,6 +5,7 @@ import mx.bronma.cobranza.riesgo.AccionRecomendada;
 import mx.bronma.cobranza.riesgo.NivelRiesgo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * Foto de la cartera de un cliente: lo que sale de {@link CarteraConsultas}
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
  *
  * @param exigible   saldo que ya vencio o vence hoy: lo que hay que cobrar en la visita.
  * @param porVencer  saldo que vence en los proximos dias (ventana de la consulta).
+ * @param proximoVencimiento la fecha mas cercana (hoy o despues) en que vence una nota con saldo; null si no hay.
  */
 public record CarteraCliente(
         Long clienteId,
@@ -33,6 +35,7 @@ public record CarteraCliente(
         BigDecimal porVencer,
         int diasAtrasoMax,
         int notasVencidas,
+        LocalDate proximoVencimiento,
         Integer scoreRiesgo,
         NivelRiesgo nivelRiesgo,
         AccionRecomendada accionRecomendada) {

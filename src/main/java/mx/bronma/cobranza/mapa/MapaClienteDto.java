@@ -4,6 +4,7 @@ import mx.bronma.cobranza.cliente.EstadoCredito;
 import mx.bronma.cobranza.riesgo.NivelRiesgo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * Cada pin de GET /mapa/clientes. Forma del contrato del roadmap (B4);
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
  * @param saldo        total de notas vivas (string decimal en el JSON).
  * @param saldoVencido saldo con vencimiento &lt; hoy.
  * @param diasAtrasoMax 0 si va al corriente.
+ * @param proximoVencimiento siguiente nota por vencer (hoy o despues); el front marca "Por vencer" si cae en 3 dias.
  * @param nivelRiesgo  ultima evaluacion de Ayax; null si nunca se ha evaluado.
  * @param prioridad    0 a 100, la misma formula de la lista de cobro.
  */
@@ -27,6 +29,7 @@ public record MapaClienteDto(
         BigDecimal saldo,
         BigDecimal saldoVencido,
         int diasAtrasoMax,
+        LocalDate proximoVencimiento,
         NivelRiesgo nivelRiesgo,
         EstadoCredito estadoCredito,
         int prioridad,

@@ -49,6 +49,7 @@ public class CarteraConsultas {
                        COALESCE(s.por_vencer, 0)     AS por_vencer,
                        COALESCE(s.dias_max, 0)       AS dias_max,
                        COALESCE(s.notas_vencidas, 0) AS notas_vencidas,
+                       s.proximo_vencimiento,
                        ev.score, ev.nivel, ev.accion_recomendada
                 FROM clientes c
                 LEFT JOIN rutas r ON r.id = c.ruta_id
@@ -61,7 +62,8 @@ public class CarteraConsultas {
                                               AND fecha_vencimiento <= CAST(:hoy AS date) + CAST(:dias AS integer)) AS por_vencer,
                            MAX(CAST(:hoy AS date) - fecha_vencimiento)
                                FILTER (WHERE fecha_vencimiento < CAST(:hoy AS date)) AS dias_max,
-                           COUNT(*) FILTER (WHERE fecha_vencimiento < CAST(:hoy AS date)) AS notas_vencidas
+                           COUNT(*) FILTER (WHERE fecha_vencimiento < CAST(:hoy AS date)) AS notas_vencidas,
+                           MIN(fecha_vencimiento) FILTER (WHERE fecha_vencimiento >= CAST(:hoy AS date)) AS proximo_vencimiento
                     FROM notas
                     WHERE estado <> 'CANCELADA' AND saldo > 0
                     GROUP BY cliente_id
@@ -92,6 +94,7 @@ public class CarteraConsultas {
                     rs.getBigDecimal("por_vencer"),
                     rs.getInt("dias_max"),
                     rs.getInt("notas_vencidas"),
+                    rs.getObject("proximo_vencimiento", LocalDate.class),
                     (Integer) rs.getObject("score"),
                     nivel == null ? null : NivelRiesgo.valueOf(nivel),
                     accion == null ? null : AccionRecomendada.valueOf(accion));
