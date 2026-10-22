@@ -46,6 +46,22 @@ public class Importacion {
     @Column(nullable = false)
     private Integer errores = 0;
 
+    // ---------- Conteos de V5 ----------
+
+    /** Notas que ya estaban igual: re-subir el mismo archivo cae todo aqui. */
+    @Column(name = "sin_cambios", nullable = false)
+    private Integer sinCambios = 0;
+
+    /** Filas de venta de contado: no generan cuenta por cobrar. */
+    @Column(nullable = false)
+    private Integer omitidas = 0;
+
+    @Column(name = "clientes_nuevos", nullable = false)
+    private Integer clientesNuevos = 0;
+
+    @Column(name = "rutas_nuevas", nullable = false)
+    private Integer rutasNuevas = 0;
+
     /**
      * JSON con el detalle: [{"fila": 12, "folio": "A-123", "error": "..."}].
      * Se guarda como texto JSON; el servicio lo arma con Jackson.

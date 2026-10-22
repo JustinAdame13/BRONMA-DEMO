@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ImportacionRepository extends JpaRepository<Importacion, Long> {
 
-    Page<Importacion> findAllByOrderByImportadoEnDesc(Pageable pageable);
+    /** La mas reciente primero. */
+    Page<Importacion> findAllByOrderByImportadoEnDescIdDesc(Pageable pageable);
 }

@@ -7,6 +7,8 @@ import mx.bronma.cobranza.common.RecursoNoEncontradoException;
 import mx.bronma.cobranza.common.ReglaNegocioException;
 import mx.bronma.cobranza.configuracion.Configuracion;
 import mx.bronma.cobranza.configuracion.ConfiguracionService;
+import mx.bronma.cobranza.nota.NotaConsultas;
+import mx.bronma.cobranza.riesgo.RiesgoConsultas;
 import mx.bronma.cobranza.ruta.Ruta;
 import mx.bronma.cobranza.ruta.RutaRepository;
 import org.springframework.stereotype.Service;
@@ -30,15 +32,21 @@ public class ClienteService {
     private final ClienteConsultas consultas;
     private final RutaRepository rutaRepository;
     private final ConfiguracionService configuracion;
+    private final NotaConsultas notas;
+    private final RiesgoConsultas riesgo;
 
     public ClienteService(ClienteRepository repository,
                           ClienteConsultas consultas,
                           RutaRepository rutaRepository,
-                          ConfiguracionService configuracion) {
+                          ConfiguracionService configuracion,
+                          NotaConsultas notas,
+                          RiesgoConsultas riesgo) {
         this.repository = repository;
         this.consultas = consultas;
         this.rutaRepository = rutaRepository;
         this.configuracion = configuracion;
+        this.notas = notas;
+        this.riesgo = riesgo;
     }
 
     // ------------------------------------------------------------------
@@ -53,7 +61,8 @@ public class ClienteService {
         int p = Math.max(pagina, 0);
         int t = Math.min(Math.max(tamano, 1), TAMANO_MAXIMO);
 
-        return consultas.buscar(rutaId, estadoCredito, q, sinUbicacion, activo, p, t);
+        return consultas.buscar(rutaId, estadoCredito, q, sinUbicacion, activo,
+                configuracion.obtenerEntidad().hoy(), p, t);
     }
 
     @Transactional(readOnly = true)
@@ -184,8 +193,8 @@ public class ClienteService {
     /** Arma el detalle resolviendo los defaults de configuracion y los saldos. */
     private ClienteDetalleDto detalle(Cliente c) {
 
-        SaldoCliente saldos = consultas.saldosDe(c.getId());
         Configuracion cfg = configuracion.obtenerEntidad();
+        SaldoCliente saldos = consultas.saldosDe(c.getId(), cfg.hoy());
 
         // limite 0 y plazo null significan "usar el default": el front muestra
         // los ...Efectivo, no los capturados.
@@ -215,6 +224,7 @@ public class ClienteService {
                 c.getEstadoCredito(),
                 saldos.saldo(),
                 saldos.saldoVencido(),
+                saldos.saldoAFavor(),
                 limite,
                 limiteEfectivo,
                 c.getPlazoDias(),
@@ -226,6 +236,8 @@ public class ClienteService {
                 c.getUbicacionFuente(),
                 c.getUbicacionFijadaEn(),
                 c.getOrdenVisita(),
-                c.getActivo());
+                c.getActivo(),
+                notas.vivasDe(c.getId(), cfg.hoy()),
+                riesgo.vigenteDe(c.getId()));
     }
 }

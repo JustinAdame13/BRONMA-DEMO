@@ -1,0 +1,12 @@
+Reporte de ventas - Distribuidora (ejemplo para probar la importacion),,,,,,,,
+,,,,,,,,
+Folio,Fecha,Clave cliente,Nombre del cliente,Ruta,Tipo,Total,Telefono,Direccion
+N-1001,01/10/2026,T001,Abarrotes La Peña,R-NORTE,Credito,"$1,250.00",871 123 4567,Av. Juárez 120 Centro
+N-1002,03/10/2026,T002,Tienda Lupita,R-NORTE,Credito,840.50,8717654321,
+N-1003,05/10/2026,T003,Mini Super El Güero,R-SUR,Credito,320,,Calle 5 de Mayo 33
+N-1003,05/10/2026,T003,Mini Super El Güero,R-SUR,Credito,180,,
+N-1004,06/10/2026,T001,Abarrotes La Peña,R-NORTE,Contado,500,,
+N-1005,31/02/2026,T004,Depósito Don Chuy,R-SUR,Credito,700,,
+N-1006,10/10/2026,T005,,R-SUR,Credito,450,,
+N-1007,12/10/2026,T002,Tienda Lupita,R-NORTE,Credito,-90,,
+,,,,,,"$4,240.50",,

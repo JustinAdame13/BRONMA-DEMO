@@ -13,6 +13,8 @@ public record ClienteResumenDto(
         EstadoCredito estadoCredito,
         BigDecimal saldo,
         BigDecimal saldoVencido,
+        /** Pagos de mas o anticipos que todavia no se aplican a ninguna nota. */
+        BigDecimal saldoAFavor,
         Double latitud,
         Double longitud,
         Integer ordenVisita,

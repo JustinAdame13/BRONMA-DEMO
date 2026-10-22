@@ -1,14 +1,17 @@
 package mx.bronma.cobranza.cliente;
 
+import mx.bronma.cobranza.nota.NotaDto;
+import mx.bronma.cobranza.riesgo.EvaluacionDto;
+
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Respuesta de GET /clientes/{id}.
  *
- * PENDIENTE: el contrato pide ademas "notasAbiertas" (NotaDto[]) y "riesgo"
- * (EvaluacionDto). Esos dos DTOs son del modulo de Justin (notas y Ayax) y se
- * agregan aqui cuando existan; inventarlos ahora los haria chocar con los suyos.
+ * notasAbiertas: las notas con saldo, la que vence antes primero.
+ * riesgo: la evaluacion vigente de Ayax; null si el cliente no se ha evaluado.
  */
 public record ClienteDetalleDto(
         Long id,
@@ -22,6 +25,8 @@ public record ClienteDetalleDto(
         EstadoCredito estadoCredito,
         BigDecimal saldo,
         BigDecimal saldoVencido,
+        /** Pagos de mas o anticipos que todavia no se aplican; se usan solos en la siguiente nota. */
+        BigDecimal saldoAFavor,
 
         /** Lo capturado: 0 significa "usar el default de configuracion". */
         BigDecimal limiteCredito,
@@ -42,5 +47,7 @@ public record ClienteDetalleDto(
         UbicacionFuente ubicacionFuente,
         Instant ubicacionFijadaEn,
         Integer ordenVisita,
-        Boolean activo) {
+        Boolean activo,
+        List<NotaDto> notasAbiertas,
+        EvaluacionDto riesgo) {
 }

@@ -80,4 +80,40 @@ public class Nota {
     public long diasVencida(LocalDate hoy) {
         return estaVencida(hoy) ? ChronoUnit.DAYS.between(fechaVencimiento, hoy) : 0;
     }
+
+    /** Puede recibir abonos: no cancelada y con saldo. */
+    public boolean estaViva() {
+        return estado != EstadoNota.CANCELADA && saldo.signum() > 0;
+    }
+
+    /**
+     * Resta un abono del saldo y deja el estado cuadrado con el CHECK de la tabla
+     * (PARCIAL si queda algo, PAGADA si llega a cero).
+     */
+    public void abonar(BigDecimal abono) {
+        if (!estaViva()) {
+            throw new IllegalStateException("La nota " + folioOrigen + " no puede recibir abonos");
+        }
+        if (abono.signum() <= 0 || abono.compareTo(saldo) > 0) {
+            throw new IllegalArgumentException("Abono invalido para la nota " + folioOrigen + ": " + abono);
+        }
+        saldo = saldo.subtract(abono);
+        estado = saldo.signum() == 0 ? EstadoNota.PAGADA : EstadoNota.PARCIAL;
+    }
+
+    /**
+     * Regresa un abono al saldo (cuando se revierte un pago). Una nota cancelada
+     * recupera el saldo pero sigue cancelada.
+     */
+    public void revertirAbono(BigDecimal abono) {
+        BigDecimal nuevo = saldo.add(abono);
+        if (nuevo.compareTo(monto) > 0) {
+            throw new IllegalStateException("Revertir " + abono + " deja la nota " + folioOrigen
+                    + " con saldo mayor al monto");
+        }
+        saldo = nuevo;
+        if (estado != EstadoNota.CANCELADA) {
+            estado = saldo.compareTo(monto) == 0 ? EstadoNota.ABIERTA : EstadoNota.PARCIAL;
+        }
+    }
 }

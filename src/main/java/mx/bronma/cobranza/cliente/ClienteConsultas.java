@@ -2,10 +2,12 @@ package mx.bronma.cobranza.cliente;
 
 import mx.bronma.cobranza.common.FiltroSql;
 import mx.bronma.cobranza.common.Pagina;
+import mx.bronma.cobranza.pago.SaldoAFavorService;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -23,17 +25,23 @@ public class ClienteConsultas {
      * Saldos de las notas vivas, agrupados por cliente, como subconsulta.
      * Vivas = no canceladas y con saldo pendiente.
      * Vencido = lo que ya paso su fecha de vencimiento.
+     * :hoy es el "hoy" del negocio (zona de configuracion). CURRENT_DATE no
+     * sirve: el servidor de la base esta en UTC y de 6 pm a medianoche en
+     * Torreon ya seria "manana".
      */
     private static final String JOIN_SALDOS = """
             LEFT JOIN (
                 SELECT cliente_id,
                        SUM(saldo) AS saldo,
-                       SUM(CASE WHEN fecha_vencimiento < CURRENT_DATE THEN saldo ELSE 0 END) AS saldo_vencido
+                       SUM(CASE WHEN fecha_vencimiento < CAST(:hoy AS date) THEN saldo ELSE 0 END) AS saldo_vencido
                 FROM notas
                 WHERE estado <> 'CANCELADA' AND saldo > 0
                 GROUP BY cliente_id
             ) s ON s.cliente_id = c.id
-            """;
+            """
+            + "LEFT JOIN (SELECT cliente_id, SUM(remanente) AS saldo_a_favor FROM ("
+            + SaldoAFavorService.REMANENTE_POR_PAGO
+            + ") rp GROUP BY cliente_id) sf ON sf.cliente_id = c.id\n";
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -43,7 +51,7 @@ public class ClienteConsultas {
 
     public Pagina<ClienteResumenDto> buscar(Long rutaId, EstadoCredito estadoCredito,
                                             String q, Boolean sinUbicacion, Boolean activo,
-                                            int pagina, int tamano) {
+                                            LocalDate hoy, int pagina, int tamano) {
 
         FiltroSql f = new FiltroSql()
                 .si(rutaId, "c.ruta_id = :rutaId", "rutaId")
@@ -57,6 +65,7 @@ public class ClienteConsultas {
         if (Boolean.TRUE.equals(sinUbicacion)) {
             f.siempre("c.latitud IS NULL");
         }
+        f.param("hoy", hoy);
 
         Long total = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM clientes c" + f.where(), f.params(), Long.class);
@@ -69,6 +78,7 @@ public class ClienteConsultas {
                        c.telefono_whatsapp, c.estado_credito,
                        COALESCE(s.saldo, 0)         AS saldo,
                        COALESCE(s.saldo_vencido, 0) AS saldo_vencido,
+                       COALESCE(sf.saldo_a_favor, 0) AS saldo_a_favor,
                        c.latitud, c.longitud, c.orden_visita, c.activo
                 FROM clientes c
                 LEFT JOIN rutas r ON r.id = c.ruta_id
@@ -90,6 +100,7 @@ public class ClienteConsultas {
                 EstadoCredito.valueOf(rs.getString("estado_credito")),
                 rs.getBigDecimal("saldo"),
                 rs.getBigDecimal("saldo_vencido"),
+                rs.getBigDecimal("saldo_a_favor"),
                 (Double) rs.getObject("latitud"),
                 (Double) rs.getObject("longitud"),
                 (Integer) rs.getObject("orden_visita"),
@@ -99,15 +110,20 @@ public class ClienteConsultas {
     }
 
     /** Los mismos saldos pero de un solo cliente, para el detalle. */
-    public SaldoCliente saldosDe(Long clienteId) {
+    public SaldoCliente saldosDe(Long clienteId, LocalDate hoy) {
         String sql = """
                 SELECT COALESCE(SUM(saldo), 0) AS saldo,
-                       COALESCE(SUM(CASE WHEN fecha_vencimiento < CURRENT_DATE THEN saldo ELSE 0 END), 0) AS saldo_vencido
+                       COALESCE(SUM(CASE WHEN fecha_vencimiento < CAST(:hoy AS date) THEN saldo ELSE 0 END), 0) AS saldo_vencido,
+                """
+                + "(SELECT COALESCE(SUM(remanente), 0) FROM (" + SaldoAFavorService.REMANENTE_POR_PAGO
+                + ") rp WHERE rp.cliente_id = :id) AS saldo_a_favor\n"
+                + """
                 FROM notas
                 WHERE cliente_id = :id AND estado <> 'CANCELADA' AND saldo > 0
                 """;
 
-        return jdbc.queryForObject(sql, new MapSqlParameterSource("id", clienteId),
-                (rs, i) -> new SaldoCliente(rs.getBigDecimal("saldo"), rs.getBigDecimal("saldo_vencido")));
+        return jdbc.queryForObject(sql, new MapSqlParameterSource("id", clienteId).addValue("hoy", hoy),
+                (rs, i) -> new SaldoCliente(rs.getBigDecimal("saldo"), rs.getBigDecimal("saldo_vencido"),
+                        rs.getBigDecimal("saldo_a_favor")));
     }
 }

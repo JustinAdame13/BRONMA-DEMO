@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
@@ -90,6 +91,13 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.CONFLICT, "CONFLICTO",
                 "La operacion viola una restriccion de la base de datos: " + ex.getMostSpecificCause().getMessage(),
                 Map.of());
+    }
+
+    /** Archivo mas grande que spring.servlet.multipart.max-file-size (importacion de ventas). */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> archivoMuyGrande(MaxUploadSizeExceededException ex) {
+        return responder(HttpStatus.CONTENT_TOO_LARGE, "ARCHIVO_MUY_GRANDE",
+                "El archivo pasa del tamano permitido (10 MB); dividelo por periodos", Map.of());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
